@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">WeatherApp</string>
+    <string name="lat_label">lat:</string>
+    <string name="long_label">long:</string>
 </resources>
