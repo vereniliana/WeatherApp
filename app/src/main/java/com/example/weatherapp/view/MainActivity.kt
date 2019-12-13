@@ -1,7 +1,8 @@
-package com.example.weatherapp
+package com.example.weatherapp.view
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -15,6 +16,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.ViewModelProviders
+import com.example.weatherapp.R
 import com.example.weatherapp.databinding.ActivityMainBinding
 import com.google.android.gms.location.*
 
@@ -25,11 +28,15 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var binding : ActivityMainBinding
+    private lateinit var viewModel: MainViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+
+        viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
+        binding = DataBindingUtil.setContentView(this,R.layout.activity_main)
         binding.lifecycleOwner = this
+        binding.viewModel = viewModel
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -40,8 +47,8 @@ class MainActivity : AppCompatActivity() {
         @SuppressLint("SetTextI18n")
         override fun onLocationResult(locationResult: LocationResult) {
             var lastLocation: Location = locationResult.lastLocation
-            binding.tvLatitude.text = getString(R.string.lat_label) + lastLocation.latitude.toString()
-            binding.tvLongitude.text = getString(R.string.lat_label) + lastLocation.longitude.toString()
+            viewModel.setLat(lastLocation.latitude)
+            viewModel.setLong(lastLocation.longitude)
         }
     }
 
@@ -52,19 +59,10 @@ class MainActivity : AppCompatActivity() {
         return false
     }
 
-    private fun requestPermissions() {
-        Log.d("lalala","requestPermission")
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
-            MY_PERMISSIONS_REQUEST_LOCATION
-        )
-    }
-
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         if (requestCode == MY_PERMISSIONS_REQUEST_LOCATION) {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                requestNewLocationData()
+                getLastLocation()
             } else {
                 //TODO permission not granted
                 Toast.makeText(this, "permission not granted", Toast.LENGTH_LONG).show()
@@ -81,34 +79,33 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun getLastLocation() {
-        Log.d("lalala","getLastLoc")
         if (checkPermissions()) {
-            Log.d("lalala","gll permission granted")
             if (isLocationEnabled()) {
-                Log.d("lalala","gll loc enabled")
                 fusedLocationClient.lastLocation.addOnCompleteListener(this) { task ->
                     var location: Location? = task.result
                     if (location == null) {
+                        Log.d("lalala", "reqloc")
                         requestNewLocationData()
                     } else {
-                        binding.tvLatitude.text = getString(R.string.lat_label) + location.latitude.toString()
-                        binding.tvLongitude.text = getString(R.string.lat_label) + location.longitude.toString()
+                        Log.d("lalala", "settext")
+                        viewModel.setLat(location.latitude)
+                        viewModel.setLong(location.longitude)
                     }
                 }
             } else {
-                Log.d("lalala","gll loc not enabled")
                 Toast.makeText(this, "Turn on location", Toast.LENGTH_LONG).show()
                 val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                 startActivity(intent)
             }
         } else {
-            Log.d("lalala","gll permission not granted")
-            requestPermissions()
+            ActivityCompat.requestPermissions(this,
+                arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
+                MY_PERMISSIONS_REQUEST_LOCATION
+            )
         }
     }
 
     private fun requestNewLocationData() {
-        Log.d("lalala","requestNewLocData")
         val locationRequest = LocationRequest()
         locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         locationRequest.interval = 0
