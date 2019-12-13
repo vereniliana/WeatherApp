@@ -14,19 +14,22 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
+import androidx.databinding.DataBindingUtil
+import com.example.weatherapp.databinding.ActivityMainBinding
 import com.google.android.gms.location.*
-import kotlinx.android.synthetic.main.activity_main.*
 
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
     val MY_PERMISSIONS_REQUEST_LOCATION = 99
+
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var binding : ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        binding.lifecycleOwner = this
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -37,8 +40,8 @@ class MainActivity : AppCompatActivity() {
         @SuppressLint("SetTextI18n")
         override fun onLocationResult(locationResult: LocationResult) {
             var lastLocation: Location = locationResult.lastLocation
-            tv_latitude.text = getString(R.string.lat_label) + lastLocation.latitude.toString()
-            tv_longitude.text = getString(R.string.lat_label) + lastLocation.longitude.toString()
+            binding.tvLatitude.text = getString(R.string.lat_label) + lastLocation.latitude.toString()
+            binding.tvLongitude.text = getString(R.string.lat_label) + lastLocation.longitude.toString()
         }
     }
 
@@ -88,8 +91,8 @@ class MainActivity : AppCompatActivity() {
                     if (location == null) {
                         requestNewLocationData()
                     } else {
-                        tv_latitude.text = getString(R.string.lat_label) + location.latitude.toString()
-                        tv_longitude.text = getString(R.string.lat_label) + location.longitude.toString()
+                        binding.tvLatitude.text = getString(R.string.lat_label) + location.latitude.toString()
+                        binding.tvLongitude.text = getString(R.string.lat_label) + location.longitude.toString()
                     }
                 }
             } else {
