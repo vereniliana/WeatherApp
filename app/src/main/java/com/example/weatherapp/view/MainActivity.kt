@@ -2,7 +2,6 @@ package com.example.weatherapp.view
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -11,7 +10,6 @@ import android.location.LocationManager
 import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings
-import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -49,6 +47,7 @@ class MainActivity : AppCompatActivity() {
             var lastLocation: Location = locationResult.lastLocation
             viewModel.setLat(lastLocation.latitude)
             viewModel.setLong(lastLocation.longitude)
+            viewModel.loadData()
         }
     }
 
@@ -84,12 +83,11 @@ class MainActivity : AppCompatActivity() {
                 fusedLocationClient.lastLocation.addOnCompleteListener(this) { task ->
                     var location: Location? = task.result
                     if (location == null) {
-                        Log.d("lalala", "reqloc")
                         requestNewLocationData()
                     } else {
-                        Log.d("lalala", "settext")
                         viewModel.setLat(location.latitude)
                         viewModel.setLong(location.longitude)
+                        viewModel.loadData()
                     }
                 }
             } else {
