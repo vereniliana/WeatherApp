@@ -10,14 +10,18 @@ import android.location.LocationManager
 import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.weatherapp.R
 import com.example.weatherapp.databinding.ActivityMainBinding
 import com.google.android.gms.location.*
+
+
 
 
 class MainActivity : AppCompatActivity() {
@@ -35,6 +39,7 @@ class MainActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this,R.layout.activity_main)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
+        viewModel.activity = this
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 

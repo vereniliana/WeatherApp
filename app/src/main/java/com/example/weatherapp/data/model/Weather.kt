@@ -1,5 +1,8 @@
 package com.example.weatherapp.data.model
 
 data class Weather(
-    val data: String
+    val id: String,
+    val main: String,
+    val description: String,
+    val icon: String
 )
