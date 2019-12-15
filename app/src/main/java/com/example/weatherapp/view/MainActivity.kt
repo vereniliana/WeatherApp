@@ -10,18 +10,16 @@ import android.location.LocationManager
 import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings
-import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.weatherapp.R
 import com.example.weatherapp.databinding.ActivityMainBinding
 import com.google.android.gms.location.*
-
-
 
 
 class MainActivity : AppCompatActivity() {
@@ -46,6 +44,25 @@ class MainActivity : AppCompatActivity() {
         getLastLocation()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        super.onCreateOptionsMenu(menu)
+        menu.add("Refresh")
+        menu.getItem(0)
+            .setIcon(R.drawable.ic_menu_refresh)
+            .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM or MenuItem.SHOW_AS_ACTION_WITH_TEXT)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            0 -> {
+                getLastLocation()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
     private val locationCallback = object : LocationCallback() {
         @SuppressLint("SetTextI18n")
         override fun onLocationResult(locationResult: LocationResult) {
@@ -68,7 +85,6 @@ class MainActivity : AppCompatActivity() {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                 getLastLocation()
             } else {
-                //TODO permission not granted
                 Toast.makeText(this, "permission not granted", Toast.LENGTH_LONG).show()
             }
         }
