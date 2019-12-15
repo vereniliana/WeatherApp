@@ -3,4 +3,7 @@
     <string name="label_temp">Temperature</string>
     <string name="label_pressure">Pressure</string>
     <string name="label_humidity">Humidity</string>
+    <string name="unit_temp">\u2103</string>
+    <string name="unit_pressure">mb</string>
+    <string name="unit_humidity">%</string>
 </resources>

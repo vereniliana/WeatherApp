@@ -62,9 +62,9 @@ class MainViewModel : ViewModel() {
                         location.value = resp.location
                         weather.value = resp.weatherList[0].main
                         description.value = resp.weatherList[0].description
-                        temperature.value = resp.info.temperature
-                        pressure.value = resp.info.pressure
-                        humidity.value = resp.info.humidity
+                        temperature.value = convertKelvinToCelcius(resp.info.temperature).toString() + activity.getString(R.string.unit_temp)
+                        pressure.value = resp.info.pressure + activity.getString(R.string.unit_pressure)
+                        humidity.value = resp.info.humidity + activity.getString(R.string.unit_humidity)
                         imageUrl.value = "http://openweathermap.org/img/wn/${resp.weatherList[0].icon}@2x.png"
                     }
                 } else {
@@ -73,6 +73,11 @@ class MainViewModel : ViewModel() {
             }
 
         })
+    }
+
+    fun convertKelvinToCelcius(k: String): Double {
+        val result = (k.toFloat() - 273.15)
+        return "%.2f".format(result).toDouble()
     }
 
     companion object DataBindingAdapter {
