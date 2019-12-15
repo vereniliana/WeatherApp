@@ -3,13 +3,19 @@ package com.example.weatherapp.view
 import android.app.Application
 import android.content.Context
 import android.util.Log
+import android.widget.ImageView
 import androidx.databinding.Bindable
+import androidx.databinding.BindingAdapter
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.weatherapp.R
 import com.google.gson.Gson
+import com.squareup.picasso.Picasso
 import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
+
+
 
 class MainViewModel : ViewModel() {
 
@@ -22,10 +28,10 @@ class MainViewModel : ViewModel() {
     var temperature = MutableLiveData<String>()
     var pressure =  MutableLiveData<String>()
     var humidity = MutableLiveData<String>()
+    var imageUrl = MutableLiveData<String>("")
 
     val apiKey = "6a1b204d6b4c85ac96ec111a13aa0ecd"
 
-    @Bindable
     fun setLat(latValue : Double) {
         latitude.value = latValue.toString()
     }
@@ -59,6 +65,7 @@ class MainViewModel : ViewModel() {
                         temperature.value = resp.info.temperature
                         pressure.value = resp.info.pressure
                         humidity.value = resp.info.humidity
+                        imageUrl.value = "http://openweathermap.org/img/wn/${resp.weatherList[0].icon}@2x.png"
                     }
                 } else {
                     Log.d("MainViewMode", json.getString("load data failed"))
@@ -67,4 +74,20 @@ class MainViewModel : ViewModel() {
 
         })
     }
+
+    companion object DataBindingAdapter {
+        @BindingAdapter("bind:imageUrl")
+        @JvmStatic
+        fun loadImage(imageView: ImageView, imageUrl: String) {
+            if (imageUrl.isNotEmpty() && imageUrl.isNotBlank()) {
+                Picasso.get()
+                    .load(imageUrl)
+                    .fit()
+                    .placeholder(R.drawable.ic_launcher_background)
+                    .error(R.drawable.ic_launcher_background)
+                    .into(imageView)
+            }
+        }
+    }
+
 }
