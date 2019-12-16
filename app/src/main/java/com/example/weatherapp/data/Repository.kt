@@ -5,22 +5,17 @@ import com.example.weatherapp.data.model.DataResponse
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.Retrofit
 
 class Repository {
 
     val apiKey = "6a1b204d6b4c85ac96ec111a13aa0ecd"
     val dataResponse = MutableLiveData<DataResponse>()
     val errorMsg = MutableLiveData<String>()
+    var retrofit = WeatherService()
 
     fun getDataByCoord(lat: String, lon: String) {
 
-        val retrofit = Retrofit.Builder()
-            .baseUrl("https://api.openweathermap.org")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-        val api = retrofit.create(Api::class.java)
+        val api = retrofit.createService(Api::class.java)
 
         api.getDataByCoord(lat, lon, apiKey).enqueue(object : Callback<DataResponse> {
             override fun onResponse(call: Call<DataResponse>, response: Response<DataResponse>) {
@@ -38,12 +33,7 @@ class Repository {
     }
 
     fun getDataByCity(city: String) {
-
-        val retrofit = Retrofit.Builder()
-            .baseUrl("https://api.openweathermap.org")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-        val api = retrofit.create(Api::class.java)
+        val api = retrofit.createService(Api::class.java)
 
         api.getDataByCity(city, apiKey).enqueue(object : Callback<DataResponse> {
             override fun onResponse(call: Call<DataResponse>, response: Response<DataResponse>) {
