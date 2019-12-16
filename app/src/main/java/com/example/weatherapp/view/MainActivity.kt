@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.weatherapp.R
 import com.example.weatherapp.databinding.ActivityMainBinding
@@ -42,6 +43,11 @@ class MainActivity : AppCompatActivity() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         getLastLocation()
+
+        viewModel.toastText
+            .observe(this, Observer { text ->
+                makeToast(text)
+            })
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -136,5 +142,9 @@ class MainActivity : AppCompatActivity() {
             locationRequest, locationCallback,
             Looper.myLooper()
         )
+    }
+
+    private fun makeToast(msg: String) {
+        Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
     }
 }
