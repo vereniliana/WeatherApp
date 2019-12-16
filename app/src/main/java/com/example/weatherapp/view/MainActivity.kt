@@ -31,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding : ActivityMainBinding
     private lateinit var viewModel: MainViewModel
 
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -38,7 +39,6 @@ class MainActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this,R.layout.activity_main)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
-        viewModel.activity = this
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -47,6 +47,26 @@ class MainActivity : AppCompatActivity() {
         viewModel.toastText
             .observe(this, Observer { text ->
                 makeToast(text)
+            })
+
+        viewModel.dataResponse
+            .observe(this, Observer { data ->
+                if (data != null) {
+                    binding.tvLocation.text = data.location
+                    binding.tvWeather.text = data.weatherList[0].main
+                    binding.tvDescription.text = data.weatherList[0].description
+                    binding.tvTemperature.text =
+                        viewModel.convertKelvinToCelsius(data.info.temperature).toString() + getString(
+                            R.string.unit_temp
+                        )
+                    binding.tvPressure.text = data.info.pressure + getString(R.string.unit_pressure)
+                    binding.tvHumidity.text = data.info.humidity + getString(R.string.unit_humidity)
+                    viewModel.imageUrl.value = "http://openweathermap.org/img/wn/${data.weatherList[0].icon}@2x.png"
+                } else {
+                    viewModel.toastText.value?.let {
+                        makeToast(it)
+                    }
+                }
             })
     }
 

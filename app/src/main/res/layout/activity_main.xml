@@ -2,6 +2,7 @@
 <layout>
 
     <data>
+
         <variable
             name="viewModel"
             type="com.example.weatherapp.view.MainViewModel" />
@@ -29,7 +30,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
                 android:fontFamily="sans-serif"
-                android:text='@{viewModel.location, default = "Bandung"}'
+                android:text="city"
                 android:textAlignment="center"
                 android:textColor="@color/colorPrimaryDark"
                 android:textSize="20sp"
@@ -53,7 +54,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
                 android:fontFamily="sans-serif"
-                android:text='@{viewModel.weather, default = "Rain"}'
+                android:text="weather"
                 android:textAlignment="center"
                 android:textSize="32sp"
                 android:textStyle="bold"
@@ -67,7 +68,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
                 android:fontFamily="sans-serif"
-                android:text='@{viewModel.description, default = "light"}'
+                android:text="description"
                 android:textAlignment="center"
                 android:textSize="20sp"
                 app:layout_constraintLeft_toLeftOf="parent"
@@ -111,7 +112,6 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
                     android:fontFamily="sans-serif"
-                    android:text='@{viewModel.temperature, default = "30"}'
                     android:textSize="16sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
@@ -153,7 +153,6 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
                     android:fontFamily="sans-serif"
-                    android:text='@{viewModel.pressure, default = ""}'
                     android:textSize="16sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
@@ -196,7 +195,6 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
                     android:fontFamily="sans-serif"
-                    android:text='@{viewModel.humidity, default = ""}'
                     android:textSize="16sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
