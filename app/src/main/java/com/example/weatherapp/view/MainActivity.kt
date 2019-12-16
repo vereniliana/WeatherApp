@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings
@@ -14,6 +15,8 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
+import android.view.inputmethod.InputMethodManager.HIDE_NOT_ALWAYS
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -21,10 +24,9 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.weatherapp.R
+import com.example.weatherapp.data.AppPrefHelper
 import com.example.weatherapp.databinding.ActivityMainBinding
 import com.google.android.gms.location.*
-import android.view.inputmethod.InputMethodManager.HIDE_NOT_ALWAYS
-import android.view.inputmethod.InputMethodManager
 
 
 class MainActivity : AppCompatActivity() {
@@ -34,6 +36,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var binding : ActivityMainBinding
     private lateinit var viewModel: MainViewModel
+    private lateinit var prefHelper: AppPrefHelper
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,25 +47,43 @@ class MainActivity : AppCompatActivity() {
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
 
+        prefHelper = AppPrefHelper(this, "weather_data")
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        getLastLocation()
+
+        if (isNetworkAvailable()) {
+            getLastLocation()
+        } else {
+            val loc = prefHelper.getLocation()
+            val weather = prefHelper.getWeather()
+            val desc = prefHelper.getDescription()
+            val temp = prefHelper.getTemperature()
+            val pressure = prefHelper.getPressure()
+            val humidity= prefHelper.getHumdity()
+            val imgCode = prefHelper.getImageCode()
+            if (loc != null && weather != null && desc != null && temp != null && pressure != null && humidity != null && imgCode != null) {
+                setData(loc, weather, desc, temp, pressure, humidity, imgCode)
+            } else {
+                Toast.makeText(this, "No Internet", Toast.LENGTH_LONG).show()
+            }
+        }
 
         viewModel.dataResponse
             .observe(this, Observer { data ->
                 if (data != null) {
                     binding.layoutLocation.visibility = View.VISIBLE
                     binding.layoutSearch.visibility = View.GONE
-                    binding.tvLocation.text = data.location
-                    binding.tvWeather.text = data.weatherList[0].main
-                    binding.tvDescription.text = data.weatherList[0].description
-                    binding.tvTemperature.text =
-                        viewModel.convertKelvinToCelsius(data.info.temperature).toString() + getString(
-                            R.string.unit_temp
-                        )
-                    binding.tvPressure.text = data.info.pressure + getString(R.string.unit_pressure)
-                    binding.tvHumidity.text = data.info.humidity + getString(R.string.unit_humidity)
-                    viewModel.imageUrl.value = "http://openweathermap.org/img/wn/${data.weatherList[0].icon}@2x.png"
+
+                    val loc = data.location
+                    val weather = data.weatherList[0].main
+                    val desc = data.weatherList[0].description
+                    val temp = data.info.temperature
+                    val pressure = data.info.pressure
+                    val humidity= data.info.humidity
+                    val imgCode = data.weatherList[0].icon
+                    setData(loc, weather, desc, temp, pressure, humidity, imgCode)
+                    saveData(loc, weather, desc, temp, pressure, humidity, imgCode)
                 } else {
                     handleError("Load data failed")
                 }
@@ -131,6 +152,33 @@ class MainActivity : AppCompatActivity() {
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetworkInfo = connectivityManager.activeNetworkInfo
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun setData(loc: String, weather: String, desc: String, temp: String, pressure: String, humidity: String, imgCode: String) {
+        binding.tvLocation.text = loc
+        binding.tvWeather.text = weather
+        binding.tvDescription.text = desc
+        binding.tvTemperature.text = viewModel.convertKelvinToCelsius(temp).toString() + getString(R.string.unit_temp)
+        binding.tvPressure.text = pressure + getString(R.string.unit_pressure)
+        binding.tvHumidity.text = humidity + getString(R.string.unit_humidity)
+        viewModel.imageUrl.value = "http://openweathermap.org/img/wn/${imgCode}@2x.png"
+    }
+
+    private fun saveData(loc: String, weather: String, desc: String, temp: String, pressure: String, humidity: String, imgCode: String) {
+        prefHelper.setLocation(loc)
+        prefHelper.setWeather(weather)
+        prefHelper.setDescription(desc)
+        prefHelper.setTemperature(temp)
+        prefHelper.setPressure(pressure)
+        prefHelper.setHumdity(humidity)
+        prefHelper.setImageCode(imgCode)
     }
 
     private val locationCallback = object : LocationCallback() {
