@@ -11,23 +11,27 @@ class Repository {
     val apiKey = "6a1b204d6b4c85ac96ec111a13aa0ecd"
     val dataResponse = MutableLiveData<DataResponse>()
     val errorMsg = MutableLiveData<String>()
+    val progressState = MutableLiveData<Boolean>()
     var retrofit = WeatherService()
 
     fun getDataByCoord(lat: String, lon: String) {
 
         val api = retrofit.createService(Api::class.java)
 
+        progressState.postValue(true)
         api.getDataByCoord(lat, lon, apiKey).enqueue(object : Callback<DataResponse> {
             override fun onResponse(call: Call<DataResponse>, response: Response<DataResponse>) {
                 if (response.isSuccessful) {
-                    dataResponse.value = response.body()
+                    dataResponse.postValue(response.body())
                 } else {
-                    errorMsg.value = response.message()
+                    errorMsg.postValue(response.message())
                 }
+                progressState.postValue(false)
             }
 
             override fun onFailure(call: Call<DataResponse>, t: Throwable) {
-                dataResponse.value = null
+                dataResponse.postValue(null)
+                progressState.postValue(false)
             }
         })
     }
@@ -35,17 +39,20 @@ class Repository {
     fun getDataByCity(city: String) {
         val api = retrofit.createService(Api::class.java)
 
+        progressState.postValue(true)
         api.getDataByCity(city, apiKey).enqueue(object : Callback<DataResponse> {
             override fun onResponse(call: Call<DataResponse>, response: Response<DataResponse>) {
                 if (response.isSuccessful) {
-                    dataResponse.value = response.body()
+                    dataResponse.postValue(response.body())
                 } else {
-                    errorMsg.value = response.message()
+                    errorMsg.postValue(response.message())
                 }
+                progressState.postValue(false)
             }
 
             override fun onFailure(call: Call<DataResponse>, t: Throwable) {
-                dataResponse.value = null
+                dataResponse.postValue(null)
+                progressState.postValue(false)
             }
         })
     }

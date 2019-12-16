@@ -50,10 +50,6 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.dataResponse
             .observe(this, Observer { data ->
-                currentFocus?.let {
-                    val inputManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                    inputManager.hideSoftInputFromWindow(this.currentFocus!!.windowToken,HIDE_NOT_ALWAYS)
-                }
                 if (data != null) {
                     binding.layoutLocation.visibility = View.VISIBLE
                     binding.layoutSearch.visibility = View.GONE
@@ -81,14 +77,35 @@ class MainActivity : AppCompatActivity() {
                 handleError(msg)
             })
 
+        viewModel.progressState
+            .observe(this, Observer { isProgress ->
+                if (isProgress) {
+                    startProgressBar()
+                } else {
+                    stopProgressBar()
+                }
+            })
+
         binding.btnSearch.setOnClickListener {
             binding.layoutLocation.visibility = View.GONE
             binding.layoutSearch.visibility = View.VISIBLE
         }
 
+        binding.btnGoSearch.setOnClickListener {
+            currentFocus?.let {
+                val inputManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                inputManager.hideSoftInputFromWindow(this.currentFocus!!.windowToken, 0)
+            }
+            viewModel.loadDataByCity()
+        }
+
         binding.etCity.setOnEditorActionListener { v, actionId, event ->
             return@setOnEditorActionListener when (actionId) {
                 EditorInfo.IME_ACTION_SEARCH-> {
+                    currentFocus?.let {
+                        val inputManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                        inputManager.hideSoftInputFromWindow(this.currentFocus!!.windowToken, 0)
+                    }
                     viewModel.loadDataByCity()
                     true
                 }
@@ -193,6 +210,24 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleError(msg: String) {
         Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+    }
+
+    fun startProgressBar() {
+        binding.layoutLocation.visibility = View.GONE
+        binding.layoutWeather.visibility = View.GONE
+        binding.cardTemp.visibility = View.GONE
+        binding.cardPressure.visibility = View.GONE
+        binding.cardHumidity.visibility = View.GONE
+        binding.progressBar.visibility = View.VISIBLE
+    }
+
+    fun stopProgressBar() {
+        binding.progressBar.visibility = View.GONE
+        binding.layoutLocation.visibility = View.VISIBLE
+        binding.layoutWeather.visibility = View.VISIBLE
+        binding.cardTemp.visibility = View.VISIBLE
+        binding.cardPressure.visibility = View.VISIBLE
+        binding.cardHumidity.visibility = View.VISIBLE
     }
 
     override fun onBackPressed() {

@@ -15,8 +15,9 @@ class MainViewModel : ViewModel() {
     private val repository = Repository()
 
     val dataResponse = repository.dataResponse
+    val errorMsg = repository.errorMsg
+    val progressState = repository.progressState
     var imageUrl = MutableLiveData<String>("")
-    var errorMsg = repository.errorMsg
     var city : String = ""
 
     fun setLat(latValue : Double) {
