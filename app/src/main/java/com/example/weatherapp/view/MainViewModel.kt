@@ -16,7 +16,8 @@ class MainViewModel : ViewModel() {
 
     val dataResponse = repository.dataResponse
     var imageUrl = MutableLiveData<String>("")
-    var toastText = MutableLiveData<String>()
+    var errorMsg = repository.errorMsg
+    var city : String = ""
 
     fun setLat(latValue : Double) {
         latitude = latValue.toString()
@@ -26,8 +27,12 @@ class MainViewModel : ViewModel() {
         longitude = longValue.toString()
     }
 
-    fun loadData() {
+    fun loadDataByCoord() {
         repository.getDataByCoord(latitude, longitude)
+    }
+
+    fun loadDataByCity() {
+        repository.getDataByCity(city)
     }
 
     fun convertKelvinToCelsius(k: String): Double {

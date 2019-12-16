@@ -12,4 +12,9 @@ interface Api {
         @Query("lat") lat: String,
         @Query("lon") lon: String,
         @Query("APPID") apiKey: String): Call<DataResponse>
+
+    @GET("/data/2.5/weather")
+    fun getDataByCity(
+        @Query("q") city: String,
+        @Query("APPID") apiKey: String): Call<DataResponse>
 }

@@ -12,6 +12,8 @@ import android.os.Looper
 import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -21,6 +23,8 @@ import androidx.lifecycle.ViewModelProviders
 import com.example.weatherapp.R
 import com.example.weatherapp.databinding.ActivityMainBinding
 import com.google.android.gms.location.*
+import android.view.inputmethod.InputMethodManager.HIDE_NOT_ALWAYS
+import android.view.inputmethod.InputMethodManager
 
 
 class MainActivity : AppCompatActivity() {
@@ -44,14 +48,15 @@ class MainActivity : AppCompatActivity() {
 
         getLastLocation()
 
-        viewModel.toastText
-            .observe(this, Observer { text ->
-                makeToast(text)
-            })
-
         viewModel.dataResponse
             .observe(this, Observer { data ->
+                currentFocus?.let {
+                    val inputManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    inputManager.hideSoftInputFromWindow(this.currentFocus!!.windowToken,HIDE_NOT_ALWAYS)
+                }
                 if (data != null) {
+                    binding.layoutLocation.visibility = View.VISIBLE
+                    binding.layoutSearch.visibility = View.GONE
                     binding.tvLocation.text = data.location
                     binding.tvWeather.text = data.weatherList[0].main
                     binding.tvDescription.text = data.weatherList[0].description
@@ -63,11 +68,33 @@ class MainActivity : AppCompatActivity() {
                     binding.tvHumidity.text = data.info.humidity + getString(R.string.unit_humidity)
                     viewModel.imageUrl.value = "http://openweathermap.org/img/wn/${data.weatherList[0].icon}@2x.png"
                 } else {
-                    viewModel.toastText.value?.let {
-                        makeToast(it)
-                    }
+                    handleError("Load data failed")
                 }
             })
+
+        viewModel.errorMsg
+            .observe(this, Observer { msg ->
+                currentFocus?.let {
+                    val inputManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    inputManager.hideSoftInputFromWindow(this.currentFocus!!.windowToken,HIDE_NOT_ALWAYS)
+                }
+                handleError(msg)
+            })
+
+        binding.btnSearch.setOnClickListener {
+            binding.layoutLocation.visibility = View.GONE
+            binding.layoutSearch.visibility = View.VISIBLE
+        }
+
+        binding.etCity.setOnEditorActionListener { v, actionId, event ->
+            return@setOnEditorActionListener when (actionId) {
+                EditorInfo.IME_ACTION_SEARCH-> {
+                    viewModel.loadDataByCity()
+                    true
+                }
+                else -> false
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -95,7 +122,7 @@ class MainActivity : AppCompatActivity() {
             var lastLocation: Location = locationResult.lastLocation
             viewModel.setLat(lastLocation.latitude)
             viewModel.setLong(lastLocation.longitude)
-            viewModel.loadData()
+            viewModel.loadDataByCoord()
         }
     }
 
@@ -134,7 +161,7 @@ class MainActivity : AppCompatActivity() {
                     } else {
                         viewModel.setLat(location.latitude)
                         viewModel.setLong(location.longitude)
-                        viewModel.loadData()
+                        viewModel.loadDataByCoord()
                     }
                 }
             } else {
@@ -164,7 +191,16 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private fun makeToast(msg: String) {
+    private fun handleError(msg: String) {
         Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+    }
+
+    override fun onBackPressed() {
+        if (binding.layoutSearch.visibility == View.VISIBLE) {
+            binding.layoutSearch.visibility = View.GONE
+            binding.layoutLocation.visibility = View.VISIBLE
+        } else {
+            super.onBackPressed()
+        }
     }
 }
